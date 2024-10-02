@@ -1,3 +1,33 @@
+spring:
+  cloud:
+    function:
+      # 내부에서 쓰는 Bean이름 - com.fastcampus.kafka.model.MyMessage 이렇게 설정한 이름이 같아야지만 제대로 메시지가 작동함
+      definition: myProducer;myConsumer;
+    stream:
+      function:
+        bindings: # 4번 라인에 설정 한 - definition과 연결된다. out : producer, in - consumer
+          myProducer-out-0: producer-test
+          myConsumer-in-0: consumer-test
+      kafka:
+        binder:
+          brokers: localhost:9092,localhost:9093,localhost:9094 # 멀티브로커관련으로 여러개의 카프카와 연결 가능
+          auto-create-topics: false # 자동으로 토픽생성 금지
+          configuration:
+            key.serializer: org.apache.kafka.common.serialization.StringSerializer
+        bindings:
+          consumer-test:
+            consumer:
+              start-offset: latest # 오프셋을 맨마지막부터 읽음
+      bindings:
+        producer-test: # 8번 라인에 설정한 - bindings.producer 연결된다.
+          destination: my-json-topic # 미리 만들어둔 토픽과 연결
+          content-type: application/json
+        consumer-test: # 8번 라인에 설정한 - bindings.consumer 연결된다.
+          destination: my-json-topic # 미리 만들어둔 토픽과 연결
+          group: test-consumer-group
+          consumer:
+            concurrency: 1
+
 # spring:
 #   kafka:
 #     bootstrap-servers: localhost:9092,localhost:9093,localhost:9094
