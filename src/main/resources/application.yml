@@ -1,50 +1,26 @@
 spring:
-  cloud:
-    function:
-      # 내부에서 쓰는 Bean이름 - com.fastcampus.kafka.model.MyMessage 이렇게 설정한 이름이 같아야지만 제대로 메시지가 작동함
-      definition: myProducer;myConsumer;
-    stream:
-      function:
-        bindings: # 4번 라인에 설정 한 - definition과 연결된다. out : producer, in - consumer
-          myProducer-out-0: producer-test
-          myConsumer-in-0: consumer-test
-      kafka:
-        binder:
-          brokers: localhost:9092,localhost:9093,localhost:9094 # 멀티브로커관련으로 여러개의 카프카와 연결 가능
-          auto-create-topics: false # 자동으로 토픽생성 금지
-          configuration:
-            key.serializer: org.apache.kafka.common.serialization.StringSerializer
-        bindings:
-          consumer-test:
-            consumer:
-              start-offset: latest # 오프셋을 맨마지막부터 읽음
-      bindings:
-        producer-test: # 8번 라인에 설정한 - bindings.producer 연결된다.
-          destination: my-json-topic # 미리 만들어둔 토픽과 연결
-          content-type: application/json
-        consumer-test: # 8번 라인에 설정한 - bindings.consumer 연결된다.
-          destination: my-json-topic # 미리 만들어둔 토픽과 연결
-          group: test-consumer-group
-          consumer:
-            concurrency: 1
-
-# spring:
-#   kafka:
-#     bootstrap-servers: localhost:9092,localhost:9093,localhost:9094
-#     consumer:
-#       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-#       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-#     producer:
-#       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-#       value-serializer: org.apache.kafka.common.serialization.StringSerializer
-#       acks: -1
-#   datasource:
-#     url: jdbc:mysql://localhost:3306/campus?serverTimezone=Asia/Seoul
-#     username: myuser
-#     password: mypassword
-#     driver-class-name: com.mysql.cj.jdbc.Driver
-#   jpa:
-#     properties:
-#       hibernate:
-#         show_sql: true
-#         format_sql: true
+  kafka:
+    bootstrap-servers: localhost:9092,localhost:9093,localhost:9094
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: latest # 가장 최근의 메시지부터 읽기 시작
+      properties:
+        spring.json.trusted.packages: "*" # 신뢰할수있는 패키지 경로 (역직렬화시 모드패키지 신뢰가있어야지 가능)
+        allow.auto.create.topic: false # 존재하지 않는 토픽에 대해 자동으로 토픽을 생성하는 것을 금지
+    listener:
+      concurrency: 1 # 리스너 컨테이너의 동시성을 설정 - 여기서는 1로 설정되어 있어, 하나의 스레드만 사용하여 메시지를 처리
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: 1 # 리더파티션 까지만 확인
+#  datasource:
+#    url: jdbc:mysql://localhost:3306/campus?serverTimezone=Asia/Seoul
+#    username: myuser
+#    password: mypassword
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#  jpa:
+#    properties:
+#      hibernate:
+#        show_sql: true
+#        format_sql: true
