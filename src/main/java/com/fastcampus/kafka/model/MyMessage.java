@@ -14,6 +14,6 @@ public class MyMessage {
 	private int id;
 	private int age;
 	private String name;
-	private String Content;
+	private String content;
 
 }
