@@ -47,8 +47,7 @@ public class KafkaConfig {
 	) {
 		ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
 		factory.setConsumerFactory(consumerFactory);
-		// 리스너 컨테이너의 동시성을 설정 - 하나의 스레드만 사용하여 메시지를 처리
-		factory.setConcurrency(1);
+
 		// 수동 커밋으로 변경
 		factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
 		return factory;
@@ -65,6 +64,8 @@ public class KafkaConfig {
 		props.put(ConsumerConfig.ALLOW_AUTO_CREATE_TOPICS_CONFIG, "false");
 		// 컨슈머가 한번에 최대 몇개의 레코드를 POLL할지 설정 : 기본값인 500개로 설정
 		props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, ConsumerConfig.DEFAULT_MAX_POLL_RECORDS);
+		// 수정 커밋으로 변경
+		props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
 		return new DefaultKafkaConsumerFactory<>(props);
 	}
 
@@ -78,10 +79,9 @@ public class KafkaConfig {
 
 		// 배치 컨슈머를 사용으로 변경
 		factory.setBatchListener(true);
-		factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.BATCH);
+		// 수동모드
+		factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
 
-		// 리스너 컨테이너의 동시성을 설정 - 하나의 스레드만 사용하여 메시지를 처리
-		factory.setConcurrency(1);
 		return factory;
 	}
 
