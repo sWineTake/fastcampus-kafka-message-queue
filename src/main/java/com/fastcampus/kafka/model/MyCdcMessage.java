@@ -15,8 +15,11 @@ public class MyCdcMessage {
 	private OperationType operationType;
 
 	@Data
+	@AllArgsConstructor
+	@NoArgsConstructor
 	public static class Payload {
 		private Integer id;
+		private Integer userId;
 		private Integer userAge;
 		private String name;
 		private String content;

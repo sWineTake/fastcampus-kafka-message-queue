@@ -1,5 +1,6 @@
 package com.fastcampus.kafka.producer;
 
+import com.fastcampus.kafka.common.CustomObjectMapper;
 import com.fastcampus.kafka.model.MyCdcMessage;
 import com.fastcampus.kafka.model.MyMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -18,7 +19,7 @@ public class MyCdcProducer {
 	private final KafkaTemplate<String, String> kafkaTemplate;
 
 	public void sendMessage(MyCdcMessage myCdcMessage) {
-		ObjectMapper objectMapper = new ObjectMapper();
+		ObjectMapper objectMapper = new CustomObjectMapper();
 		try {
 
 			kafkaTemplate.send(

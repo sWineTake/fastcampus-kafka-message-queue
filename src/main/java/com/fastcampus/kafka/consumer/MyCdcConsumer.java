@@ -1,5 +1,6 @@
 package com.fastcampus.kafka.consumer;
 
+import com.fastcampus.kafka.common.CustomObjectMapper;
 import com.fastcampus.kafka.model.MyCdcMessage;
 import com.fastcampus.kafka.model.MyMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -21,7 +22,7 @@ import static com.fastcampus.kafka.model.Topic.MY_JSON_TOPIC;
 @Component
 public class MyCdcConsumer {
 
-	private final ObjectMapper objectMapper = new ObjectMapper();
+	private final ObjectMapper objectMapper = new CustomObjectMapper();
 
 	@KafkaListener(
 		topics = {MY_CDC_TOPIC},
@@ -34,7 +35,7 @@ public class MyCdcConsumer {
 		MyCdcMessage myCdcMessage = objectMapper.readValue(message.value(), MyCdcMessage.class);
 
 		System.out.println("[CDC]****************************");
-		System.out.println(myCdcMessage.getPayload().toString());
+		System.out.println(myCdcMessage.toString());
 
 		// 수동으로 커밋
 		acknowledgment.acknowledge();

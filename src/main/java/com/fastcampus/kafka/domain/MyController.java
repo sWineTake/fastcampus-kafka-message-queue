@@ -1,27 +1,56 @@
 package com.fastcampus.kafka.domain;
 
-import com.fastcampus.kafka.model.MyCdcMessage;
-import com.fastcampus.kafka.model.MyMessage;
-import com.fastcampus.kafka.producer.MyProducer;
+import com.fastcampus.kafka.model.MyModel;
+import com.fastcampus.kafka.service.MyServiceImpl;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 public class MyController {
 
-	private final MyProducer myProducer;
+	private final MyServiceImpl myServiceImpl;
 
-	@PostMapping("/message")
-	void message(@RequestBody MyMessage myMessage) {
-		myProducer.sendMessage(myMessage);
+	@PostMapping("/gree")
+	MyModel create(@RequestBody Request request) {
+		if (request == null || request.getUserId() == null || request.getUserAge()  == null || request.getContent() == null) {
+			return null;
+		}
+
+		MyModel create = MyModel.Create(
+			request.getUserId(),
+			request.getUserAge(),
+			request.getUserName(),
+			request.getContent()
+		);
+
+		return myServiceImpl.saveEntity(create);
 	}
 
-	@PostMapping("/cdc-message")
-	void message(@RequestBody MyCdcMessage myMessage) {
-		myProducer.sendMessage(myMessage);
+	@GetMapping("/gree")
+	List<MyModel> getList() {
+		return myServiceImpl.findAll();
+	}
+
+	@GetMapping("/gree/{id}")
+	MyModel getDetail(@PathVariable Integer id) {
+		return myServiceImpl.findById(id);
+	}
+
+	@DeleteMapping("/gree/{id}")
+	void deleteDetail(@PathVariable Integer id) {
+		myServiceImpl.deleteEntity(id);
+	}
+
+	@Data
+	private static class Request {
+		Integer userId;
+		String userName;
+		Integer userAge;
+		String content;
 	}
 
 

@@ -2,7 +2,6 @@ package com.fastcampus.kafka.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +11,7 @@ public class MyModel {
 	private final Integer id;
 	private final Integer userId;
 	private final Integer userAge;
-	private final String username;
+	private final String userName;
 	private String content;
 	private final LocalDateTime createAt;
 	private final LocalDateTime updatedAt;

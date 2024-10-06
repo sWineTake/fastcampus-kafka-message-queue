@@ -1,11 +1,7 @@
 package com.fastcampus.kafka.data;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -13,6 +9,9 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity(name = "my_table")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(value = MyEntityListener.class) // 리스너 등록
 public class MyTable {
 
 	@Id
@@ -23,6 +22,7 @@ public class MyTable {
 
 	private Integer userAge;
 
+	@Column(name = "user_name")
 	private String username;
 
 	private String content;
@@ -31,4 +31,10 @@ public class MyTable {
 	@UpdateTimestamp
 	private LocalDateTime updatedAt;
 
+	public MyTable(Integer userId, Integer userAge, String username, String content) {
+		this.userId = userId;
+		this.userAge = userAge;
+		this.username = username;
+		this.content = content;
+	}
 }
