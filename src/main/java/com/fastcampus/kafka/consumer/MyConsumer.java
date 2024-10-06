@@ -25,12 +25,12 @@ public class MyConsumer {
 	// 비동기로 메시지를 처리할 친구
 	private final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
-	@KafkaListener(
+	/*@KafkaListener(
 		topics = {MY_JSON_TOPIC},
 		groupId = "test-consumer-group",
 		containerFactory = "kafkaListenerContainerFactory",
 		concurrency = "3"
-	)
+	)*/
 	public void accept(ConsumerRecord<String, String> message, Acknowledgment acknowledgment) throws JsonProcessingException {
 		// Todo) 메시지에서 우리가 정의한 메시지타입으로 받게 설정
 		MyMessage myMessage = objectMapper.readValue(message.value(), MyMessage.class);
@@ -50,12 +50,12 @@ public class MyConsumer {
 		}
 	}
 
-	@KafkaListener(
+	/*@KafkaListener(
 		topics = {MY_JSON_TOPIC},
 		groupId = "batch-test-consumer-group",
 		containerFactory = "batchKafkaListenerContainerFactory",
 		concurrency = "3"
-	)
+	)*/
 	public void accept(List<ConsumerRecord<String, String>> messages, Acknowledgment acknowledgment) {
 		ObjectMapper objectMapper = new ObjectMapper();
 		System.out.println("[BATCH]****************************" );

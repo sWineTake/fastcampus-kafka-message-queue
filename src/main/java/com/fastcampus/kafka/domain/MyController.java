@@ -1,5 +1,6 @@
 package com.fastcampus.kafka.domain;
 
+import com.fastcampus.kafka.model.MyCdcMessage;
 import com.fastcampus.kafka.model.MyMessage;
 import com.fastcampus.kafka.producer.MyProducer;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,11 @@ public class MyController {
 
 	@PostMapping("/message")
 	void message(@RequestBody MyMessage myMessage) {
+		myProducer.sendMessage(myMessage);
+	}
+
+	@PostMapping("/cdc-message")
+	void message(@RequestBody MyCdcMessage myMessage) {
 		myProducer.sendMessage(myMessage);
 	}
 
