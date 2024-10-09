@@ -1,6 +1,8 @@
 package com.fastcampus.kafka.config;
 
+import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
@@ -10,10 +12,19 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
-import org.springframework.kafka.listener.ContainerProperties;
+import org.springframework.kafka.listener.*;
+import org.springframework.util.ErrorHandler;
+import org.springframework.util.backoff.BackOff;
+import org.springframework.util.backoff.ExponentialBackOff;
+import org.springframework.util.backoff.FixedBackOff;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static com.fastcampus.kafka.model.Topic.MY_CUSTOM_CDC_TOPIC_DLT;
 
 @Configuration
 public class KafkaConfig {
@@ -23,6 +34,40 @@ public class KafkaConfig {
 	@ConfigurationProperties("spring.kafka")
 	public KafkaProperties kafkaProperties() {
 		return new KafkaProperties();
+	}
+
+	@Bean
+	@Primary
+	CommonErrorHandler errorHandler() {
+		CommonContainerStoppingErrorHandler cseh = new CommonContainerStoppingErrorHandler();
+
+		AtomicReference<Consumer<?, ?>> consumer2 = new AtomicReference<>();
+		AtomicReference<MessageListenerContainer> container2 = new AtomicReference<>();
+
+		DefaultErrorHandler errorHandler = new DefaultErrorHandler(
+			(rec, ex) -> {
+				// 컨슈머 스탑핑 에러 핸들러를 통해서 해당 컨슈머를 중지시킨다.
+				cseh.handleRemaining(ex, Collections.singletonList(rec), consumer2.get(), container2.get());
+
+			},
+			generatedBackOff()) {
+			@Override
+			public void handleRemaining(
+				Exception thrownException,
+				List<ConsumerRecord<?, ?>> records,
+				Consumer<?, ?> consumer,
+				MessageListenerContainer container
+			) {
+
+				consumer2.set(consumer);
+				container2.set(container);
+				super.handleRemaining(thrownException, records, consumer, container);
+			}
+		};
+
+		errorHandler.addNotRetryableExceptions(IllegalArgumentException.class);
+
+		return errorHandler;
 	}
 
 	@Bean
@@ -43,10 +88,34 @@ public class KafkaConfig {
 	@Bean
 	@Primary
 	public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory(
-		ConsumerFactory<String, Object> consumerFactory
+		ConsumerFactory<String, Object> consumerFactory,
+		KafkaTemplate<String, Object> kafkaTemplate
 	) {
 		ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
 		factory.setConsumerFactory(consumerFactory);
+
+		// 에러 헨들러 추가
+		// DefaultErrorHandler errorHandler = new DefaultErrorHandler(exponetialBackOff());
+		// errorHandler.addNotRetryableExceptions(IllegalArgumentException.class); // -> 해당 에러 발생시 재시도 하지않음 (예외처리)
+		// factory.setCommonErrorHandler(errorHandler);
+
+		// 에러 발생시 컨슈머가 멈추게 설정도 가능
+		// factory.setCommonErrorHandler(new CommonContainerStoppingErrorHandler());
+
+		// 커스텀에러 추가 : 에러핸들러 추가방식 - 재시도 후에 컨슈머 스탑핑 에러 핸들러발생하여 컨슈머 중지
+		// factory.setCommonErrorHandler(errorHandler);
+
+		// 데드 레더 큐 추가
+		factory.setCommonErrorHandler(
+			new DefaultErrorHandler(
+					// 해당 정책 재발송으로 하여도 에러가 발생하면 - 데드레더 토픽에 프로듀서됨
+					(recod, ex) -> {
+						// recod : 실패한 메시지
+						kafkaTemplate.send(MY_CUSTOM_CDC_TOPIC_DLT, (String) recod.key(), recod.value());
+					}
+				, generatedBackOff() // 해당 정책으로 재발송 실행
+			)
+		);
 
 		// 수동 커밋으로 변경
 		factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
@@ -113,5 +182,18 @@ public class KafkaConfig {
 	@Primary
 	public KafkaTemplate<String, ?> kafkaTemplate(KafkaProperties kafkaProperties) {
 		return new KafkaTemplate<>(producerFactory(kafkaProperties));
+	}
+
+	// 재시도 케이스 1번
+	private BackOff generatedBackOff() {
+		return new FixedBackOff(1000L, 3L); // 1초에 3번 재시도
+	}
+
+	// 재시도 케이스 2번
+	private BackOff exponetialBackOff() {
+		ExponentialBackOff backOff = new ExponentialBackOff(1000L, 2L); // 1초 간격으로 시작해서 2배씩 간격이 증가
+		// backOff.setMaxElapsedTime(10000L); // 최대 10초까지만 증가
+		backOff.setMaxAttempts(1); // 최대 한번 실행
+		return backOff;
 	}
 }

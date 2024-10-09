@@ -10,6 +10,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,6 +24,7 @@ import static com.fastcampus.kafka.model.Topic.MY_JSON_TOPIC;
 public class MyCdcConsumer {
 
 	private final ObjectMapper objectMapper = new CustomObjectMapper();
+	private int retryCount = 0;
 
 	@KafkaListener(
 		topics = {MY_CDC_TOPIC},
@@ -31,14 +33,20 @@ public class MyCdcConsumer {
 		concurrency = "3"
 	)
 	public void accept(ConsumerRecord<String, String> message, Acknowledgment acknowledgment) throws JsonProcessingException {
+		String retryPrint = retryCount != 0 ? "(RETRY : " + retryCount + ")" : "";
+
 		// Todo) 메시지에서 우리가 정의한 메시지타입으로 받게 설정
 		MyCdcMessage myCdcMessage = objectMapper.readValue(message.value(), MyCdcMessage.class);
 
-		System.out.println("[CDC]****************************");
+		System.out.println(retryPrint + "[CDC]****************************" + message.partition() + " /time " + LocalDateTime.now());
 		System.out.println(myCdcMessage.toString());
 
+		// 강제 에러
+		retryCount++;
+		throw new IllegalArgumentException("Something happened!");
+
 		// 수동으로 커밋
-		acknowledgment.acknowledge();
+		// acknowledgment.acknowledge();
 	}
 
 }

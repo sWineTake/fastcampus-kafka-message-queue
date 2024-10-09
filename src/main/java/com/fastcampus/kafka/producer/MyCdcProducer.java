@@ -24,6 +24,7 @@ public class MyCdcProducer {
 
 			kafkaTemplate.send(
 				MY_CDC_TOPIC,
+				String.valueOf(myCdcMessage.getId()),
 				objectMapper.writeValueAsString(myCdcMessage)
 			);
 
