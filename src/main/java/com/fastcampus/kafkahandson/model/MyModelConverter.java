@@ -1,6 +1,6 @@
 package com.fastcampus.kafkahandson.model;
 
-import com.fastcampus.kafkahandson.data.MyEntity;
+import com.fastcampus.kafkahandson.data.my.MyEntity;
 
 public class MyModelConverter {
 

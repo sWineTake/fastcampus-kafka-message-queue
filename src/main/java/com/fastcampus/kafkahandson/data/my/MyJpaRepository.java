@@ -1,4 +1,4 @@
-package com.fastcampus.kafkahandson.data;
+package com.fastcampus.kafkahandson.data.my;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

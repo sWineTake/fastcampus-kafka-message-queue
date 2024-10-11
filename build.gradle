@@ -25,13 +25,22 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter:3.2.0'
 	implementation 'org.springframework.boot:spring-boot-starter-web:3.2.0'
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
-	implementation 'org.springframework.kafka:spring-kafka:3.1.0'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.2.0'
 
+	// 스웨거
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+	// 카프카
+	implementation 'org.springframework.kafka:spring-kafka:3.1.0'
 	implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.0'
 
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.2.0'
+	// DB
 	implementation 'mysql:mysql-connector-java:8.0.33'
+
+	// 디비자움 설정
+	implementation 'io.debezium:debezium-api:1.9.5.Final'
+	implementation 'io.debezium:debezium-embedded:1.9.5.Final'
+	implementation 'io.debezium:debezium-connector-mysql:1.9.5.Final'
+	implementation 'org.apache.kafka:connect-api:3.1.0'
 
 	compileOnly 'org.projectlombok:lombok:1.18.30'
 	annotationProcessor 'org.projectlombok:lombok:1.18.30'

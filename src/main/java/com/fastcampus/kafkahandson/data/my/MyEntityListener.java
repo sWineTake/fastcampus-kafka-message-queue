@@ -1,4 +1,4 @@
-package com.fastcampus.kafkahandson.data;
+package com.fastcampus.kafkahandson.data.my;
 
 import com.fastcampus.kafkahandson.model.MyModel;
 import com.fastcampus.kafkahandson.model.MyModelConverter;

@@ -1,7 +1,8 @@
 package com.fastcampus.kafkahandson.service;
 
-import com.fastcampus.kafkahandson.data.MyEntity;
-import com.fastcampus.kafkahandson.data.MyJpaRepository;
+import com.fastcampus.kafkahandson.data.my.MyEntity;
+import com.fastcampus.kafkahandson.data.my.MyJpaRepository;
+import com.fastcampus.kafkahandson.data.outbox.EventType;
 import com.fastcampus.kafkahandson.model.MyModel;
 import com.fastcampus.kafkahandson.model.MyModelConverter;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import java.util.Optional;
 public class MyServiceImpl implements MyService {
 
     private final MyJpaRepository myJpaRepository;
+    private final OutboxService outboxService;
 
     @Override
     public List<MyModel> findAll() {
@@ -31,6 +33,7 @@ public class MyServiceImpl implements MyService {
     @Override
     public MyModel save(MyModel model) {
         MyEntity entity = myJpaRepository.save(MyModelConverter.toEntity(model));
+        outboxService.publishEvent(MyEntity.class.toString(), entity.getId().toString(), EventType.CREATE, entity.toString());
         return MyModelConverter.toModel(entity);
     }
 

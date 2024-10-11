@@ -6,8 +6,8 @@ import java.util.List;
 
 public interface MyService {
 
-    public List<MyModel> findAll();
-    public MyModel findById(Integer id);
-    public MyModel save(MyModel model);
-    public void delete(Integer id);
+    List<MyModel> findAll();
+    MyModel findById(Integer id);
+    MyModel save(MyModel model);
+    void delete(Integer id);
 }
