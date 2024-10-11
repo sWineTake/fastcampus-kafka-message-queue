@@ -1,5 +1,6 @@
 package com.fastcampus.kafkahandson.service;
 
+import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.RecordChangeEvent;
 import jakarta.annotation.PostConstruct;
@@ -15,7 +16,7 @@ import java.util.concurrent.Executors;
 @Service
 @RequiredArgsConstructor
 public class DebeziumService {
-	private final DebeziumEngine<RecordChangeEvent<SourceRecord>> debeziumEngine;
+	private final DebeziumEngine<ChangeEvent<String, String>> debeziumEngine;
 
 	@PostConstruct
 	public void start() {

@@ -16,3 +16,8 @@ create index idx_outbox_events_aggregate
 create index idx_outbox_events_created_at
 	on campus.outbox_events (created_at);
 
+-- Debezium 사용자에게 필요한 권한 부여
+GRANT RELOAD, FLUSH_TABLES, SELECT, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'myuser'@'localhost';
+
+-- 권한 변경 즉시 적용
+FLUSH PRIVILEGES;
